@@ -29,14 +29,24 @@ new IPv4AddressBlock("192.168.0.0/24");
 new IPv4AddressBlock("192.168.0.0", 24);
 new IPv4AddressBlock(new IPv4Address("192.168.0.0"), 24);
 
+// Scan through just IP addresses
 new IPv4BlockScan(new IPv4AddressBlock("192.168.0.0/24"));
 new IPv4BlockScan(new IPv4Address("192.168.0.0"), ScanMethod.SINGLE_ADDRESS);
 new IPv4BlockScan(new IPv4Address("192.168.0.0"), ScanMethod.ENDLESS_INCREASE);
 new IPv4BlockScan(new IPv4Address("192.168.0.0"), ScanMethod.ENDLESS_DECREASE);
 new IPv4BlockScan(Arrays.asList(new IPv4Address("192.168.1.1"), new IPv4Address("192.168.1.145"))));
+
+// Scan through IP addresses and ports
+new IPv4BlockPortScan(new IPv4AddressBlock("192.168.0.0/24"));
+new IPv4BlockPortScan(new IPv4Address("192.168.0.0"), ScanMethod.SINGLE_ADDRESS);
+new IPv4BlockPortScan(new IPv4Address("192.168.0.0"), ScanMethod.ENDLESS_INCREASE);
+new IPv4BlockPortScan(new IPv4Address("192.168.0.0"), ScanMethod.ENDLESS_DECREASE);
+new IPv4BlockPortScan(Arrays.asList(new IPv4Address("192.168.1.1"), new IPv4Address("192.168.1.145"))));
 ```
 
 #### Traversing IP blocks
+
+Can manually cycle through a block of addresses.
 ```java
 IPv4AddressBlock block = new IPv4AddressBlock("192.168.0.0", "192.168.1.255");
 IPv4Address address = block.getFirstAddress();
@@ -48,7 +58,17 @@ do {
 } while (address.getDecimal() < block.getLastAddress().getDecimal());
 ```
 
-#### Scanner example
+Or use the address scanner to do so in a faster, multithreaded context.
+```java
+IPv4AddressBlock addressBlock = new IPv4AddressBlock("192.168.0.0", "192.168.1.255");
+
+IPv4BlockScan blockScan = new IPv4BlockScan(addressBlock)
+        .setThreadCount(64)
+        .setConsumingMethod(YourApplication::consumingMethod)
+        .executeAndAwait();
+```
+
+#### Port scanner example
 In this example, we are creating a range of the most commonly expected local address range
 and have a list of the most common ports used for web pages.
 
