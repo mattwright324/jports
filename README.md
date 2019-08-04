@@ -15,6 +15,7 @@ Flexible, fast, multithreaded address and port scanning library for Java.
 
 ## Sample(s)
 
+#### Constructors
 Examples of creating addresses and address blocks
 ```java
 new IPv4Address(3232235521L); // 192.168.0.1
@@ -27,8 +28,27 @@ new IPv4AddressBlock(new IPv4Address("192.168.0.0"), new IPv4Address("192.168.1.
 new IPv4AddressBlock("192.168.0.0/24");
 new IPv4AddressBlock("192.168.0.0", 24);
 new IPv4AddressBlock(new IPv4Address("192.168.0.0"), 24);
+
+new IPv4BlockScan(new IPv4AddressBlock("192.168.0.0/24"));
+new IPv4BlockScan(new IPv4Address("192.168.0.0"), ScanMethod.SINGLE_ADDRESS);
+new IPv4BlockScan(new IPv4Address("192.168.0.0"), ScanMethod.ENDLESS_INCREASE);
+new IPv4BlockScan(new IPv4Address("192.168.0.0"), ScanMethod.ENDLESS_DECREASE);
+new IPv4BlockScan(Arrays.asList(new IPv4Address("192.168.1.1"), new IPv4Address("192.168.1.145"))));
 ```
 
+#### Traversing IP blocks
+```java
+IPv4AddressBlock block = new IPv4AddressBlock("192.168.0.0", "192.168.1.255");
+IPv4Address address = block.getFirstAddress();
+
+do {
+    System.out.println(address.getAddress());
+
+    address = address.nextAddress();
+} while (address.getDecimal() < block.getLastAddress().getDecimal());
+```
+
+#### Scanner example
 In this example, we are creating a range of the most commonly expected local address range
 and have a list of the most common ports used for web pages.
 
