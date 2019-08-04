@@ -1,6 +1,7 @@
 package io.mattw.jports;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,8 +28,22 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
     /**
      * Endlessly scan in either direction (or a single address though this doesn't make much sense to do so).
      */
+    public IPv4BlockScan(final String address, final ScanMethod scanMethod) {
+        super(address, scanMethod);
+    }
+
+    /**
+     * Endlessly scan in either direction (or a single address though this doesn't make much sense to do so).
+     */
     public IPv4BlockScan(final IPv4Address address, final ScanMethod scanMethod) {
         super(address, scanMethod);
+    }
+
+    /**
+     * Scan a specific list of addresses.
+     */
+    public IPv4BlockScan(final List<String> addresses) {
+        super(addresses);
     }
 
     /**

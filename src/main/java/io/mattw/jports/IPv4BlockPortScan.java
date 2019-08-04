@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -35,8 +36,24 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
      * Endlessly scan in either direction or single addresses. Single addresses are more relevant here
      * than in {@link IPv4BlockScan} as you may have multiple ports to cycle through for a single address.
      */
+    public IPv4BlockPortScan(final String address, final ScanMethod scanMethod) {
+        super(address, scanMethod);
+    }
+
+    /**
+     * Endlessly scan in either direction or single addresses. Single addresses are more relevant here
+     * than in {@link IPv4BlockScan} as you may have multiple ports to cycle through for a single address.
+     */
     public IPv4BlockPortScan(final IPv4Address address, final ScanMethod scanMethod) {
         super(address, scanMethod);
+    }
+
+    /**
+     * Scan a specific list of addresses.
+     * @param addresses
+     */
+    public IPv4BlockPortScan(final List<String> addresses) {
+        super(addresses);
     }
 
     /**

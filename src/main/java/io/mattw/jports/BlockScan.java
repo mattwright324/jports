@@ -1,6 +1,8 @@
 package io.mattw.jports;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class BlockScan<T extends BlockScan> {
 
@@ -26,6 +28,13 @@ public abstract class BlockScan<T extends BlockScan> {
     /**
      * Endlessly scan in either direction (or single addresses, though this doesn't make much sense to do so).
      */
+    public BlockScan(final String address, final ScanMethod scanMethod) {
+        this(new IPv4Address(address), scanMethod);
+    }
+
+    /**
+     * Endlessly scan in either direction (or single addresses, though this doesn't make much sense to do so).
+     */
     public BlockScan(final IPv4Address address, final ScanMethod scanMethod) {
         if (scanMethod != ScanMethod.ENDLESS_DECREASE && scanMethod != ScanMethod.ENDLESS_INCREASE && scanMethod != ScanMethod.SINGLE_ADDRESS) {
             throw new IllegalArgumentException("Invalid scan method. Must be ENDLESS_DECREASE, ENDLESS_INCREASE, or SINGLE_ADDRESS");
@@ -33,6 +42,18 @@ public abstract class BlockScan<T extends BlockScan> {
 
         this.startAddress = address;
         this.scanMethod = scanMethod;
+    }
+
+    /**
+     * Scan a specific list of addresses.
+     */
+    public BlockScan(final List<String> addresses) {
+        this(addresses.stream()
+                .map(String::trim)
+                .filter(entry -> !entry.isEmpty())
+                .filter(IPv4Address::matchesIPv4Pattern)
+                .map(IPv4Address::new)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -80,7 +101,7 @@ public abstract class BlockScan<T extends BlockScan> {
     public T await() throws InterruptedException {
         producer.await();
         consumers.await();
-        return (T) this;
+        return getThis();
     }
 
     /**
