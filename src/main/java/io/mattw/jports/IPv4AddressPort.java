@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class IPv4AddressPort implements Serializable {
 
-    private IPv4Address address;
+    private IPv4Address iPv4Address;
     private int port;
 
     private String fullAddress;
@@ -18,26 +18,26 @@ public class IPv4AddressPort implements Serializable {
     }
 
     /**
-     * @param address x.x.x.x
+     * @param iPv4Address x.x.x.x
      * @param port    0-65535
      */
-    public IPv4AddressPort(final String address, final int port) {
-        this(new IPv4Address(address), port);
+    public IPv4AddressPort(final String iPv4Address, final int port) {
+        this(new IPv4Address(iPv4Address), port);
     }
 
     /**
-     * @param address arbitrary address
+     * @param iPv4Address arbitrary address
      * @param port    0-65535
      */
-    public IPv4AddressPort(final IPv4Address address, final int port) {
-        this.address = address;
+    public IPv4AddressPort(final IPv4Address iPv4Address, final int port) {
+        this.iPv4Address = iPv4Address;
         this.port = Math.abs(port) % 65536;
 
-        this.fullAddress = this.address.getAddress() + ":" + this.port;
+        this.fullAddress = this.iPv4Address.getAddress() + ":" + this.port;
     }
 
-    public IPv4Address getAddress() {
-        return address;
+    public IPv4Address getiPv4Address() {
+        return iPv4Address;
     }
 
     public int getPort() {

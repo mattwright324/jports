@@ -21,6 +21,7 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
     private boolean checkPortOpen = true;
     private int checkTimeout = 300;
     private Collection<Integer> ports;
+    private Consumer<IPv4AddressPort> progressMethod;
     private Consumer<IPv4AddressPort> consumingMethod;
 
     private Queue<IPv4AddressPort> objectQueue = new LinkedBlockingQueue<>();
@@ -78,8 +79,18 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
         return this;
     }
 
-    public IPv4BlockPortScan setPorts(Collection<Integer> ports) {
+    public IPv4BlockPortScan setPorts(final Collection<Integer> ports) {
         this.ports = ports;
+        return this;
+    }
+
+    /**
+     * Additional method consumer that pushes for every address:port grabbed as used by threads
+     * and can be used to increment a counter in the external application
+     * when {@link #checkPortOpen} is true (because you won't know where it is in the scan otherwise).
+     */
+    public IPv4BlockPortScan setProgressMethod(final Consumer<IPv4AddressPort> progressMethod) {
+        this.progressMethod = progressMethod;
         return this;
     }
 
@@ -89,7 +100,7 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
      * @param checkPortOpen when true, if port is open, will push to consumer, otherwise ignored
      *                      when false, will push all generated values to consumer regardless if open
      */
-    public IPv4BlockPortScan setCheckPortOpen(boolean checkPortOpen) {
+    public IPv4BlockPortScan setCheckPortOpen(final boolean checkPortOpen) {
         this.checkPortOpen = checkPortOpen;
         return this;
     }
@@ -99,7 +110,7 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
      *
      * @param checkTimeout millis
      */
-    public IPv4BlockPortScan setCheckTimeout(int checkTimeout) {
+    public IPv4BlockPortScan setCheckTimeout(final int checkTimeout) {
         this.checkTimeout = checkTimeout;
         return this;
     }
@@ -107,7 +118,6 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
     @Override
     public IPv4BlockPortScan execute() {
         Objects.requireNonNull(consumingMethod);
-        Objects.requireNonNull(addressBlock);
         Objects.requireNonNull(ports);
 
         if (ports.isEmpty()) {
@@ -187,6 +197,8 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
             if (shutdown) {
                 return true;
             }
+
+            sleep(5);
         }
 
         return false;
@@ -198,22 +210,28 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
             final IPv4AddressPort addressPort = objectQueue.poll();
 
             if (addressPort != null) {
+                if(progressMethod != null) {
+                    progressMethod.accept(addressPort);
+                }
+
                 if (!checkPortOpen || checkPortOpen && isPortOpen(addressPort)) {
                     consumingMethod.accept(addressPort);
                 }
-            } else {
-                sleep(25);
             }
 
             if (shutdown) {
                 break;
             }
+
+            sleep(5);
         }
     }
 
     private boolean isPortOpen(final IPv4AddressPort addressPort) {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(addressPort.getAddress().getAddress(), addressPort.getPort()), checkTimeout);
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(addressPort.getiPv4Address().getAddress(), addressPort.getPort()), checkTimeout);
+            socket.close();
 
             return true;
         } catch (IOException e) {

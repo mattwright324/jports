@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -53,7 +54,6 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
         super(addresses);
     }
 
-
     public IPv4BlockScan setConsumingMethod(final Consumer<IPv4Address> consumingMethod) {
         this.consumingMethod = consumingMethod;
         return this;
@@ -62,7 +62,6 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
     @Override
     public IPv4BlockScan execute() {
         Objects.requireNonNull(consumingMethod);
-        Objects.requireNonNull(addressBlock);
 
         producer.submitAndShutdown(this::producer);
 
@@ -122,16 +121,16 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
             final IPv4Address address = objectQueue.poll();
 
             if (address != null) {
+
                 consumingMethod.accept(address);
-            } else {
-                sleep(25);
             }
 
             if (shutdown) {
                 break;
             }
+
+            sleep(5);
         }
     }
-
 
 }
