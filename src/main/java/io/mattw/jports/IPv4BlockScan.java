@@ -129,7 +129,8 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
                 break;
             }
 
-            sleep(5);
+            // Without delay, would freeze JavaFX UI despite being on a separate thread.
+            sleep(2);
         }
     }
 

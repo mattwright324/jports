@@ -198,7 +198,8 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
                 return true;
             }
 
-            sleep(5);
+            // Without delay, would freeze JavaFX UI despite being on a separate thread.
+            sleep(2);
         }
 
         return false;
@@ -223,7 +224,8 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
                 break;
             }
 
-            sleep(5);
+            // Without delay, would freeze JavaFX UI despite being on a separate thread.
+            sleep(2);
         }
     }
 
