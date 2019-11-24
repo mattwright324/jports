@@ -1,9 +1,6 @@
 package io.mattw.jports;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -75,13 +72,13 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
     void producer() {
         switch (scanMethod) {
             case SINGLE_ADDRESS:
-                objectQueue.offer(startAddress);
+                waitAndOfferToQueue(objectQueue, startAddress);
                 break;
 
             case RANGE_ADDRESS:
                 IPv4Address address1 = addressBlock.getFirstAddress();
                 do {
-                    objectQueue.offer(address1);
+                    waitAndOfferToQueue(objectQueue, address1);
 
                     address1 = address1.nextAddress();
                 } while (address1.getDecimal() < addressBlock.getLastAddress().getDecimal() && !shutdown);
@@ -89,7 +86,7 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
 
             case MULTI_ADDRESS:
                 for (IPv4Address address2 : addresses) {
-                    objectQueue.offer(address2);
+                    waitAndOfferToQueue(objectQueue, address2);
 
                     if (shutdown) {
                         break;
@@ -101,7 +98,7 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
             case ENDLESS_INCREASE:
                 IPv4Address address3 = startAddress;
                 do {
-                    objectQueue.offer(address3);
+                    waitAndOfferToQueue(objectQueue, address3);
 
                     if (scanMethod == ScanMethod.ENDLESS_INCREASE) {
                         address3 = address3.nextAddress();
@@ -117,11 +114,12 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
 
     @Override
     void consumer() {
+        final String threadId = UUID.randomUUID().toString();
         while (producer.isStillWorking() || !objectQueue.isEmpty()) {
             final IPv4Address address = objectQueue.poll();
 
             if (address != null) {
-
+                updateThreadTime(threadId);
                 consumingMethod.accept(address);
             }
 
@@ -133,5 +131,12 @@ public class IPv4BlockScan extends BlockScan<IPv4BlockScan> {
             sleep(2);
         }
     }
+
+    @Override
+    public long getQueueSize() {
+        return objectQueue.size();
+    }
+
+
 
 }

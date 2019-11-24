@@ -3,10 +3,8 @@ package io.mattw.jports;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
@@ -192,7 +190,7 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
      */
     private boolean offerPorts(final IPv4Address address) {
         for (Integer port : ports) {
-            objectQueue.offer(new IPv4AddressPort(address, port));
+            waitAndOfferToQueue(objectQueue, new IPv4AddressPort(address, port));
 
             if (shutdown) {
                 return true;
@@ -207,10 +205,12 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
 
     @Override
     void consumer() {
+        final String threadId = UUID.randomUUID().toString();
         while (producer.isStillWorking() || !objectQueue.isEmpty()) {
             final IPv4AddressPort addressPort = objectQueue.poll();
 
             if (addressPort != null) {
+                updateThreadTime(threadId);
                 if(progressMethod != null) {
                     progressMethod.accept(addressPort);
                 }
@@ -241,4 +241,20 @@ public class IPv4BlockPortScan extends BlockScan<IPv4BlockPortScan> {
         }
     }
 
+    @Override
+    public long getQueueSize() {
+        return objectQueue.size();
+    }
+
+    public boolean isCheckPortOpen() {
+        return checkPortOpen;
+    }
+
+    public int getCheckTimeout() {
+        return checkTimeout;
+    }
+
+    public Collection<Integer> getPorts() {
+        return ports;
+    }
 }
